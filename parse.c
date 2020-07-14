@@ -1,96 +1,206 @@
-#include <stdio.h>
-#include <string.h>
-#include <libxml/parser.h>
-#include <libxml/xmlmemory.h>
-
-#define FILENAME "1.xml"
-
-int parseHreadElement(xmlDocPtr doc,xmlNodePtr cur)
+#include "parse.h"
+int parseFilesElement(xmlDocPtr doc,xmlNodePtr node)
 {
 	xmlChar *content;
-	
-	cur = cur->xmlChildrenNode;
-	while(cur != NULL)
+	xmlNodePtr node_pre;
+	node = node->xmlChildrenNode;
+	while(node != NULL)
 	{
-		if(!xmlStrcmp(cur->name,(const xmlChar*)"title"))
+		if(!xmlStrcmp(node->name,(const xmlChar*)"File"))
 		{
-			content = xmlNodeListGetString(doc,cur->xmlChildrenNode,1);
-			printf("Tab title = %s\n",content);
-			xmlFree(content);
+			node_pre = node;
+			node = node->xmlChildrenNode;
+			while (node != NULL )
+			{
+				if(!xmlStrcmp(node->name,(const xmlChar*)"FileName"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("FileName = %s\n",content);
+					xmlFree(content);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"FileType"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("FileType = %s\n",content);
+					xmlFree(content);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"FilePath"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("FilePath = %s\n",content);
+					xmlFree(content);
+				}
+				node = node->next;
+			}
+			node = node_pre;
 		}
-		cur = cur->next;
+		node = node->next;
 	}
 	return 0;
 }
 
-int parseBodyElement(xmlDocPtr doc,xmlNodePtr cur)
+int parseTargetOptionElement(xmlDocPtr doc,xmlNodePtr node)
 {
 	xmlChar *content;
-	
-	cur = cur->xmlChildrenNode;
-	while(cur != NULL)
+	xmlNodePtr node_pre;
+	node = node->xmlChildrenNode;
+	while(node != NULL)
 	{
-		if(!xmlStrcmp(cur->name,(const xmlChar*)"h1"))
+		if(!xmlStrcmp(node->name,(const xmlChar*)"TargetCommonOption"))
 		{
-			content = xmlNodeListGetString(doc,cur->xmlChildrenNode,1);
-			printf("H1 title = %s\n",content);
-			xmlFree(content);
+			node_pre = node;
+			node = node->xmlChildrenNode;
+			while (node != NULL )
+			{
+				if(!xmlStrcmp(node->name,(const xmlChar*)"Device"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("Device = %s\n",content);
+					xmlFree(content);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"Vendor"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("Vendor = %s\n",content);
+					xmlFree(content);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"Cpu"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("Cpu = %s\n",content);
+					xmlFree(content);
+				}
+				node = node->next;
+			}
+			node = node_pre;
 		}
-		if(!xmlStrcmp(cur->name,(const xmlChar*)"p"))
-		{
-			content = xmlNodeListGetString(doc,cur->xmlChildrenNode,1);
-			printf("paragraph content = %s\n",content);
-			xmlFree(content);
-		}
-		cur = cur->next;
+		node = node->next;
 	}
 	return 0;
 }
 
-int parseHtml(const char*fileName)
+int parseGroupsElement(xmlDocPtr doc,xmlNodePtr node)
+{
+	xmlNodePtr node_pre;
+	xmlChar *content;
+	node = node->xmlChildrenNode;
+	while(node != NULL)
+	{
+		if(!xmlStrcmp(node->name,(const xmlChar*)"Group"))
+		{
+			node_pre = node;
+			node = node->xmlChildrenNode;
+			while(node != NULL)
+			{
+				if(!xmlStrcmp(node->name,(const xmlChar*)"GroupName"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("GroupName = %s\n",content);
+					xmlFree(content);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"Files"))
+				{
+					parseFilesElement(doc,node);
+				}
+				node = node->next;
+			}
+			node = node_pre;
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+
+int parseTargetsElement(xmlDocPtr doc,xmlNodePtr node)
+{
+	xmlNodePtr node_pre;
+	xmlChar *content;
+	node = node->xmlChildrenNode;
+	while(node != NULL)
+	{
+		if(!xmlStrcmp(node->name,(const xmlChar*)"Target"))
+		{
+			node_pre = node;
+			node = node->xmlChildrenNode;
+			while (node != NULL)
+			{
+				if(!xmlStrcmp(node->name,(const xmlChar*)"TargetName"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("TargetName = %s\n",content);
+					xmlFree(content);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"ToolsetNumber"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("ToolsetNumber = %s\n",content);
+					xmlFree(content);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"ToolsetName"))
+				{
+					content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+					printf("ToolsetName = %s\n",content);
+					xmlFree(content);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"TargetOption"))
+				{
+					parseTargetOptionElement(doc,node);
+				}
+				else if(!xmlStrcmp(node->name,(const xmlChar*)"Groups"))
+				{
+					parseGroupsElement(doc,node);
+				}
+				node = node->next;
+			}
+			node = node_pre;
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+
+int parseUvproj(const char*fileName)
 {
 	xmlDocPtr doc;
-	xmlNodePtr cur;
-	xmlChar *id;
-
+	xmlNodePtr node;
+	xmlChar *content;
 	doc = xmlParseFile(fileName);
 	if(doc == NULL)
 	{
 		printf("ERROR\n");
 		return -1;
 	}
-	cur = xmlDocGetRootElement(doc);
-	if(xmlStrcmp(cur->name,(const xmlChar*)"html"))
+	node = xmlDocGetRootElement(doc);
+	if(xmlStrcmp(node->name,(const xmlChar*)"Project"))
 	{
-		printf("%s is not a html file",fileName);
+		printf("%s is not a .uvproj(x) file",fileName);
 		if(doc != NULL)
 		xmlFreeDoc(doc);
 		return -1;
 	}
-	cur = cur->xmlChildrenNode;
-	while(cur != NULL)
+	node = node->xmlChildrenNode;
+	while(node != NULL)
 	{
-		if(!xmlStrcmp(cur->name,(const xmlChar*)"head"))
+		if(!xmlStrcmp(node->name,(const xmlChar*)"SchemaVersion"))
 		{
-			// = xmlGetProp(cur,(const xmlChar*)
-			parseHreadElement(doc,cur);
-
+			content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+			printf("SchemaVersion = %s\n",content);
+			xmlFree(content);
 		}
-		else if(!xmlStrcmp(cur->name,(const xmlChar*)"body"))
+		else if(!xmlStrcmp(node->name,(const xmlChar*)"Header"))
 		{
-			parseBodyElement(doc,cur);
+			content = xmlNodeListGetString(doc,node->xmlChildrenNode,1);
+			printf("Header = %s\n",content);
+			xmlFree(content);
 		}
-		cur = cur->next;
+		else if(!xmlStrcmp(node->name,(const xmlChar*)"Targets"))
+		{
+			parseTargetsElement(doc,node);
+		}
+		node = node->next;
 	}
 	xmlFreeDoc(doc);
 	return 0;
 }
-
-int main()
-{
-	parseHtml(FILENAME);
-	return 0;
-}
-
-
-
